@@ -66,12 +66,8 @@ def packet_handler_switch_sig(sem_ver: str) -> str:
     Args:
         sem_ver (str): The semantic version string.
     """
-    if semver.compare(sem_ver, "7.3.0") > 0:
-        return "E8 ? ? ? ? 41 83 C7 ? 49 8B FD"
-    elif semver.compare(sem_ver, "7.3.0") == 0:
-        if semver.parse(sem_ver)["build"]:
-            return "E8 ? ? ? ? 41 83 C7 ? 49 8B FD"
-        return "E8 ? ? ? ? 41 83 C5 ? 49 8B FC"
+    if semver.compare(sem_ver, "7.3.0") >= 0:
+        return "E8 ? ? ? ? 41 83 ? ? 49 8B ? 41 81"
     elif semver.compare(sem_ver, "7.2.0") >= 0:
         return "E8 ? ? ? ? 41 83 C7 ? EB 1B"
     elif semver.compare(sem_ver, "6.4.0") >= 0:
@@ -139,13 +135,17 @@ def get_packet_handler_opcode_offset(r2, exe_file: str):
     r2.cmd(f"s {opcode_offset_target}")
     r2.cmd("aei; aeim; aeip")  # Initialize ESIL VM, stack, and instruction pointer
 
-    if semver.compare(sem_ver, "7.2.0") >= 0:
+    if semver.compare(sem_ver, "7.4.0") >= 0:
         offset_reg = "r15"
-        if (
-            semver.compare(sem_ver, "7.3.0") == 0
-            and semver.parse(sem_ver)["build"] == ""
-        ):
-            offset_reg = "r13"
+        opcode_offset = _get_opcode_offset_post_72(r2, offset_reg)
+    elif semver.compare(sem_ver, "7.3.8") >= 0:
+        offset_reg = "r13"
+        opcode_offset = _get_opcode_offset_post_72(r2, offset_reg)
+    elif semver.compare(sem_ver, "7.3.0") == 0 and semver.parse(sem_ver)["build"] == "":
+        offset_reg = "r13"
+        opcode_offset = _get_opcode_offset_post_72(r2, offset_reg)
+    elif semver.compare(sem_ver, "7.2.0") >= 0:
+        offset_reg = "r15"
         opcode_offset = _get_opcode_offset_post_72(r2, offset_reg)
     else:
         opcode_offset = _get_opcode_offset_pre_72(r2)
