@@ -154,5 +154,9 @@
   {
     "retail_version": "7.51h",
     "version_string": "2026.06.10.0000.0000"
+  },
+  {
+    "retail_version": "7.51h2",
+    "version_string": "2026.06.18.0000.0000"
   }
 ]
